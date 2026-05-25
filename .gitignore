@@ -1,0 +1,12 @@
+# Backend
+backend/venv/
+backend/venv2/
+backend/.env
+backend/__pycache__/
+backend/*.pyc
+backend/travel.db
+
+# Frontend
+frontend/node_modules/
+frontend/.env
+frontend/dist/
