@@ -2,7 +2,7 @@
 
 > A full-stack AI-powered travel planning web app that generates personalized day-by-day itineraries, hotel recommendations, packing lists, and real-time weather forecasts for any destination in the world.
 
-🌐 **Live Demo:** [ai-travel-planner.vercel.app](https://ai-travel-planner-zeta-one.vercel.app) &nbsp;|&nbsp; ⚙️ **API:** [ai-travel-planner-4wuo.onrender.com](https://ai-travel-planner-4wuo.onrender.com)
+🌐 **Live Demo:** [Live App](https://ai-travel-planner-zeta-one.vercel.app) &nbsp;|&nbsp; ⚙️ **API:** [ai-travel-planner-4wuo.onrender.com](https://ai-travel-planner-4wuo.onrender.com)
 
 ---
 
