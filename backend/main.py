@@ -7,8 +7,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(
     title="AI Travel Planner API",
     swagger_ui_parameters={"persistAuthorization": True}
@@ -27,6 +25,9 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(trips.router)
 
+@app.on_event("startup")
+def startup():
+    Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def root():
