@@ -168,6 +168,9 @@ export default function TripDetail() {
             <button style={styles.editBtn} onClick={() => setEditMode(!editMode)}>
               {editMode ? '✕ Cancel' : '✏️ Edit Trip'}
             </button>
+            <button style={styles.printBtn} onClick={() => window.print()}>
+              🖨️ Print
+            </button>
             <button style={styles.shareBtn} onClick={copyShareLink}>
               {copied ? '✅ Copied!' : '🔗 Share'}
             </button>
@@ -682,4 +685,14 @@ const styles = {
   hotelPrice: { fontWeight: 'bold', fontSize: '15px', color: '#333' },
   perNight: { fontSize: '11px', color: '#888', fontWeight: 'normal' },
   hotelRating: { fontSize: '13px', color: '#f6ad55' },
+  
+  printBtn: {
+  padding: '8px 20px',
+  background: 'white',
+  color: '#555',
+  border: '1px solid #ddd',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  fontWeight: 'bold',
+},
 }
