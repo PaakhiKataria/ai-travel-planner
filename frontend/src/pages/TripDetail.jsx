@@ -18,6 +18,8 @@ export default function TripDetail() {
   const [packingLoading, setPackingLoading] = useState(false)
   const [showPacking, setShowPacking] = useState(false)
   const [checkedItems, setCheckedItems] = useState({})
+  const [currency, setCurrency] = useState('USD')
+  const [exchangeRates, setExchangeRates] = useState(null)
 
   const [editNumDays, setEditNumDays] = useState(3)
   const [editBudget, setEditBudget] = useState('moderate')
@@ -69,6 +71,34 @@ export default function TripDetail() {
     }
     if (trip) fetchWeather()
   }, [trip])
+
+  useEffect(() => {
+    const fetchRates = async () => {
+      try {
+        const res = await fetch('https://open.er-api.com/v6/latest/USD')
+        const data = await res.json()
+        setExchangeRates(data.rates)
+      } catch {
+        setExchangeRates(null)
+      }
+    }
+    fetchRates()
+  }, [])
+
+  const convertCost = (costStr) => {
+    if (!exchangeRates || !costStr) return costStr
+    const match = costStr.match(/[\d,]+\.?\d*/)
+    if (!match) return costStr
+    const amount = parseFloat(match[0].replace(',', ''))
+    const rate = exchangeRates[currency] || 1
+    const converted = (amount * rate).toFixed(0)
+    const symbols = {
+      USD: '$', CAD: 'C$', EUR: '€', GBP: '£',
+      INR: '₹', AUD: 'A$', JPY: '¥', MXN: 'MX$'
+    }
+    const symbol = symbols[currency] || currency + ' '
+    return costStr.replace(/[$€£₹]?[\d,]+\.?\d*/, `${symbol}${Number(converted).toLocaleString()}`)
+  }
 
   const fetchPackingList = async () => {
     if (packingList) {
@@ -255,7 +285,7 @@ export default function TripDetail() {
                     <img
                       src={`https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`}
                       alt={day.weather[0].description}
-                      style={{ width: '48px', height: '48px' }}
+                      style={{ width: '36px', height: '36px' }}
                     />
                     <div style={styles.weatherDayTemp}>{Math.round(day.main.temp)}°C</div>
                     <div style={styles.weatherDayDesc}>{day.weather[0].description}</div>
@@ -270,14 +300,28 @@ export default function TripDetail() {
           </div>
         )}
 
-        {/* Cost + Flight Search */}
+        {/* Cost + Currency + Flight Search */}
         {!editMode && (
           <div style={styles.infoBar}>
             <div style={styles.infoBarLeft}>
               {trip.itinerary?.total_estimated_cost && (
-                <span>💰 Total estimated cost: <strong>{trip.itinerary.total_estimated_cost}</strong></span>
+                <span>💰 Total estimated cost: <strong>{convertCost(trip.itinerary.total_estimated_cost)}</strong></span>
               )}
             </div>
+            <select
+              style={styles.currencySelect}
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+            >
+              <option value="USD">🇺🇸 USD</option>
+              <option value="CAD">🇨🇦 CAD</option>
+              <option value="EUR">🇪🇺 EUR</option>
+              <option value="GBP">🇬🇧 GBP</option>
+              <option value="INR">🇮🇳 INR</option>
+              <option value="AUD">🇦🇺 AUD</option>
+              <option value="JPY">🇯🇵 JPY</option>
+              <option value="MXN">🇲🇽 MXN</option>
+            </select>
             <a
               href={`https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTAxLTAxagcIARIDYWxsEgoyMDI2LTAxLTA4&q=flights+to+${encodeURIComponent(trip.destination.split(',')[0])}`}
               target="_blank"
@@ -347,7 +391,7 @@ export default function TripDetail() {
                     <h3 style={styles.placeName}>{place.name}</h3>
                     <p style={styles.placeDesc}>{place.description}</p>
                     <div style={styles.placeMeta}>
-                      <span style={styles.placeCost}>💰 {place.estimated_cost}</span>
+                      <span style={styles.placeCost}>💰 {convertCost(place.estimated_cost)}</span>
                       <a
                         href={`https://www.google.com/maps/search/${encodeURIComponent(place.name + ' ' + trip.destination)}`}
                         target="_blank"
@@ -443,7 +487,7 @@ export default function TripDetail() {
                   </div>
                   <div style={styles.hotelItemRight}>
                     <div style={styles.hotelPrice}>
-                      {hotel.price_per_night}
+                      {convertCost(hotel.price_per_night)}
                       <span style={styles.perNight}>/night</span>
                     </div>
                     <div style={styles.hotelRating}>⭐ {hotel.rating}</div>
@@ -489,6 +533,11 @@ const styles = {
     color: '#667eea', border: '2px solid #667eea',
     borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold',
   },
+  printBtn: {
+    padding: '8px 20px', background: 'white',
+    color: '#555', border: '1px solid #ddd',
+    borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold',
+  },
   shareBtn: {
     padding: '8px 20px',
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -497,15 +546,14 @@ const styles = {
   },
   weatherBox: {
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    borderRadius: '16px', padding: '20px 24px',
+    borderRadius: '16px', padding: '14px 18px',
     marginBottom: '16px', color: 'white',
     boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
   },
   weatherTitle: {
-    fontSize: '15px', fontWeight: 'bold',
-    marginBottom: '16px', opacity: 0.95,
+    fontSize: '13px', fontWeight: 'bold',
+    marginBottom: '12px', opacity: 0.95,
   },
-  weatherNote: { fontSize: '12px', opacity: 0.7, fontWeight: 'normal' },
   weatherDays: {
     display: 'flex', gap: '8px',
     overflowX: 'auto', paddingBottom: '4px',
@@ -514,21 +562,21 @@ const styles = {
     display: 'flex', flexDirection: 'column',
     alignItems: 'center',
     background: 'rgba(255,255,255,0.15)',
-    borderRadius: '12px', padding: '12px 16px',
-    minWidth: '110px', gap: '2px',
+    borderRadius: '12px', padding: '8px 12px',
+    minWidth: '85px', gap: '1px',
   },
   weatherDayName: {
-    fontSize: '12px', fontWeight: 'bold',
+    fontSize: '11px', fontWeight: 'bold',
     opacity: 0.9, textAlign: 'center',
   },
-  weatherDayTemp: { fontSize: '22px', fontWeight: 'bold', lineHeight: 1 },
+  weatherDayTemp: { fontSize: '18px', fontWeight: 'bold', lineHeight: 1 },
   weatherDayDesc: {
-    fontSize: '11px', textTransform: 'capitalize',
+    fontSize: '10px', textTransform: 'capitalize',
     opacity: 0.85, textAlign: 'center',
   },
   weatherDayStats: {
-    display: 'flex', gap: '8px',
-    fontSize: '11px', opacity: 0.8, marginTop: '4px',
+    display: 'flex', gap: '6px',
+    fontSize: '10px', opacity: 0.8, marginTop: '2px',
   },
   editForm: {
     background: 'white', borderRadius: '16px',
@@ -570,6 +618,11 @@ const styles = {
     alignItems: 'center', gap: '12px',
   },
   infoBarLeft: { flex: 1, color: '#333' },
+  currencySelect: {
+    padding: '8px 12px', borderRadius: '8px',
+    border: '1px solid #ddd', fontSize: '14px',
+    cursor: 'pointer', background: 'white', color: '#333',
+  },
   flightBtn: {
     padding: '8px 18px',
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -629,17 +682,14 @@ const styles = {
     borderRadius: '3px', transition: 'width 0.3s ease',
   },
   packingCategories: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
+    display: 'flex', flexDirection: 'column', gap: '16px',
   },
   packingCategory: { background: '#f9f9f9', borderRadius: '12px', padding: '16px' },
   categoryTitle: { fontSize: '14px', fontWeight: 'bold', color: '#333', margin: '0 0 12px' },
   itemsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-    gap: '8px',
-    marginTop: '4px',
+    gap: '8px', marginTop: '4px',
   },
   packingItem: { display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' },
   checkbox: {
@@ -685,14 +735,4 @@ const styles = {
   hotelPrice: { fontWeight: 'bold', fontSize: '15px', color: '#333' },
   perNight: { fontSize: '11px', color: '#888', fontWeight: 'normal' },
   hotelRating: { fontSize: '13px', color: '#f6ad55' },
-  
-  printBtn: {
-  padding: '8px 20px',
-  background: 'white',
-  color: '#555',
-  border: '1px solid #ddd',
-  borderRadius: '8px',
-  cursor: 'pointer',
-  fontWeight: 'bold',
-},
 }
