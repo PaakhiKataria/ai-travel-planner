@@ -519,7 +519,7 @@ export default function TripDetail() {
       </div>
 
       {/* Print Only Content - hidden on screen, shown when printing */}
-      <div style={styles.printOnly}>
+      <div className="print-only" style={{ display: 'none' }}>
         <h1>✈️ {trip.destination}</h1>
         <p>{trip.num_days} days · {trip.budget} budget · {trip.interests}</p>
         <p>Total estimated cost: {trip.itinerary?.total_estimated_cost}</p>
