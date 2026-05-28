@@ -786,5 +786,5 @@ const styles = {
     fontSize: '15px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
   },
-  printOnly: { display: 'none' },
+  //printOnly: { display: 'none' },
 }
