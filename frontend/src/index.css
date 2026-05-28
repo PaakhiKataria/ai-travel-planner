@@ -110,8 +110,24 @@ code {
   background: var(--code-bg);
 }
 
-@media print {
+/*@media print {
   nav, .no-print { display: none !important; }
   body { background: white !important; }
   * { box-shadow: none !important; }
+}*/
+
+@media print {
+  body > div > nav,
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+  }
+  * {
+    box-shadow: none !important;
+  }
+  [style*="display: none"] {
+    display: block !important;
+  }
 }

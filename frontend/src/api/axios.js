@@ -1,10 +1,14 @@
 import axios from 'axios'
 
+const BASE_URL = 'https://ai-travel-planner-4wuo.onrender.com'
+
 const api = axios.create({
-  baseURL: 'https://ai-travel-planner-4wuo.onrender.com',
+  baseURL: BASE_URL,
 })
 
-// Automatically attach JWT token to every request
+// Wake up the server when the app loads
+fetch(`${BASE_URL}/`).catch(() => {})
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   if (token) {
@@ -13,7 +17,6 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Redirect to login if token expires
 api.interceptors.response.use(
   (response) => response,
   (error) => {

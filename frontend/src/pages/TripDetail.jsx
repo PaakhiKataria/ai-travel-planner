@@ -100,6 +100,10 @@ export default function TripDetail() {
     return costStr.replace(/[$€£₹]?[\d,]+\.?\d*/, `${symbol}${Number(converted).toLocaleString()}`)
   }
 
+  const handlePrint = () => {
+    window.print()
+  }
+
   const fetchPackingList = async () => {
     if (packingList) {
       setShowPacking(true)
@@ -198,9 +202,6 @@ export default function TripDetail() {
             <button style={styles.editBtn} onClick={() => setEditMode(!editMode)}>
               {editMode ? '✕ Cancel' : '✏️ Edit Trip'}
             </button>
-            <button style={styles.printBtn} onClick={() => window.print()}>
-              🖨️ Print
-            </button>
             <button style={styles.shareBtn} onClick={copyShareLink}>
               {copied ? '✅ Copied!' : '🔗 Share'}
             </button>
@@ -285,7 +286,7 @@ export default function TripDetail() {
                     <img
                       src={`https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`}
                       alt={day.weather[0].description}
-                      style={{ width: '36px', height: '36px' }}
+                      style={{ width: '48px', height: '48px' }}
                     />
                     <div style={styles.weatherDayTemp}>{Math.round(day.main.temp)}°C</div>
                     <div style={styles.weatherDayDesc}>{day.weather[0].description}</div>
@@ -379,7 +380,7 @@ export default function TripDetail() {
           </div>
         )}
 
-        {/* Places */}
+        {/* Places — show current day only in normal view */}
         {!editMode && !showPacking && days[activeDay] && (
           <div>
             <h2 style={styles.dayTitle}>{days[activeDay].title}</h2>
@@ -506,7 +507,46 @@ export default function TripDetail() {
           </div>
         )}
 
+        {/* Print Button at bottom */}
+        {!editMode && (
+          <div style={styles.printSection}>
+            <button style={styles.printBtn} onClick={handlePrint}>
+              🖨️ Print Full Itinerary
+            </button>
+          </div>
+        )}
+
       </div>
+
+      {/* Print Only Content - hidden on screen, shown when printing */}
+      <div style={styles.printOnly}>
+        <h1>✈️ {trip.destination}</h1>
+        <p>{trip.num_days} days · {trip.budget} budget · {trip.interests}</p>
+        <p>Total estimated cost: {trip.itinerary?.total_estimated_cost}</p>
+        <hr />
+        {days.map((day, i) => (
+          <div key={i}>
+            <h2>Day {day.day} — {day.title}</h2>
+            {day.places.map((place, j) => (
+              <div key={j} style={{ marginBottom: '12px' }}>
+                <strong>{place.time} — {place.name}</strong>
+                <p>{place.description}</p>
+                <p>Cost: {place.estimated_cost}</p>
+              </div>
+            ))}
+            <hr />
+          </div>
+        ))}
+        {trip.itinerary?.tips && (
+          <div>
+            <h2>💡 Travel Tips</h2>
+            <ul>
+              {trip.itinerary.tips.map((tip, i) => <li key={i}>{tip}</li>)}
+            </ul>
+          </div>
+        )}
+      </div>
+
     </div>
   )
 }
@@ -533,11 +573,6 @@ const styles = {
     color: '#667eea', border: '2px solid #667eea',
     borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold',
   },
-  printBtn: {
-    padding: '8px 20px', background: 'white',
-    color: '#555', border: '1px solid #ddd',
-    borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold',
-  },
   shareBtn: {
     padding: '8px 20px',
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -546,13 +581,13 @@ const styles = {
   },
   weatherBox: {
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    borderRadius: '16px', padding: '14px 18px',
+    borderRadius: '16px', padding: '20px 24px',
     marginBottom: '16px', color: 'white',
     boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
   },
   weatherTitle: {
-    fontSize: '13px', fontWeight: 'bold',
-    marginBottom: '12px', opacity: 0.95,
+    fontSize: '15px', fontWeight: 'bold',
+    marginBottom: '16px', opacity: 0.95,
   },
   weatherDays: {
     display: 'flex', gap: '8px',
@@ -562,21 +597,21 @@ const styles = {
     display: 'flex', flexDirection: 'column',
     alignItems: 'center',
     background: 'rgba(255,255,255,0.15)',
-    borderRadius: '12px', padding: '8px 12px',
-    minWidth: '85px', gap: '1px',
+    borderRadius: '12px', padding: '12px 16px',
+    minWidth: '110px', gap: '2px',
   },
   weatherDayName: {
-    fontSize: '11px', fontWeight: 'bold',
+    fontSize: '12px', fontWeight: 'bold',
     opacity: 0.9, textAlign: 'center',
   },
-  weatherDayTemp: { fontSize: '18px', fontWeight: 'bold', lineHeight: 1 },
+  weatherDayTemp: { fontSize: '22px', fontWeight: 'bold', lineHeight: 1 },
   weatherDayDesc: {
-    fontSize: '10px', textTransform: 'capitalize',
+    fontSize: '11px', textTransform: 'capitalize',
     opacity: 0.85, textAlign: 'center',
   },
   weatherDayStats: {
-    display: 'flex', gap: '6px',
-    fontSize: '10px', opacity: 0.8, marginTop: '2px',
+    display: 'flex', gap: '8px',
+    fontSize: '11px', opacity: 0.8, marginTop: '4px',
   },
   editForm: {
     background: 'white', borderRadius: '16px',
@@ -735,4 +770,21 @@ const styles = {
   hotelPrice: { fontWeight: 'bold', fontSize: '15px', color: '#333' },
   perNight: { fontSize: '11px', color: '#888', fontWeight: 'normal' },
   hotelRating: { fontSize: '13px', color: '#f6ad55' },
+  printSection: {
+    marginTop: '40px',
+    textAlign: 'center',
+    paddingBottom: '32px',
+  },
+  printBtn: {
+    padding: '12px 32px',
+    background: 'white',
+    color: '#555',
+    border: '1px solid #ddd',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: '15px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+  },
+  printOnly: { display: 'none' },
 }
