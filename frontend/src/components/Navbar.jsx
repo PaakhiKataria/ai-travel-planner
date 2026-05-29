@@ -17,11 +17,11 @@ export default function Navbar() {
         <button style={styles.createBtn} onClick={() => navigate('/create')}>
           + New Trip
         </button>
-        <button style={styles.logoutBtn} onClick={handleLogout}>
-          Logout
-        </button>
         <button style={styles.profileBtn} onClick={() => navigate('/profile')}>
           👤 Profile
+        </button>
+        <button style={styles.logoutBtn} onClick={handleLogout}>
+          Logout
         </button>
       </div>
     </nav>
