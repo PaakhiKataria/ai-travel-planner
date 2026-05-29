@@ -20,6 +20,9 @@ export default function Navbar() {
         <button style={styles.logoutBtn} onClick={handleLogout}>
           Logout
         </button>
+        <button style={styles.profileBtn} onClick={() => navigate('/profile')}>
+          👤 Profile
+        </button>
       </div>
     </nav>
   )
@@ -60,6 +63,14 @@ const styles = {
   },
   logoutBtn: {
     padding: '8px 20px',
+    background: 'transparent',
+    color: '#666',
+    border: '1px solid #ddd',
+    borderRadius: '8px',
+    cursor: 'pointer',
+  },
+  profileBtn: {
+    padding: '8px 16px',
     background: 'transparent',
     color: '#666',
     border: '1px solid #ddd',

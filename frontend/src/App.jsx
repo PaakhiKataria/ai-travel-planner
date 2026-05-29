@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard'
 import CreateTrip from './pages/CreateTrip'
 import TripDetail from './pages/TripDetail'
 import ShareTrip from './pages/ShareTrip'
+import Profile from './pages/Profile'
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('token')
@@ -28,6 +29,9 @@ function App() {
           <PrivateRoute><TripDetail /></PrivateRoute>
         } />
         <Route path="/share/:share_token" element={<ShareTrip />} />
+        <Route path="/profile" element={
+          <PrivateRoute><Profile /></PrivateRoute>
+        } />
       </Routes>
     </BrowserRouter>
   )

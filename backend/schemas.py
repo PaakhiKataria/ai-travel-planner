@@ -48,3 +48,10 @@ class TripOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+
+class ChangePassword(BaseModel):
+    current_password: str
+    new_password: str
