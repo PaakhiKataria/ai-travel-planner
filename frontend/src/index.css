@@ -116,19 +116,15 @@ code {
   * { box-shadow: none !important; }
 }*/
 
+.print-only {
+  display: none;
+}
+
 @media print {
-  /* Hide everything */
-  body * {
-    visibility: hidden;
-  }
-  /* Show only print content */
-  .print-only, .print-only * {
-    visibility: visible;
+  body > div > * {
+    display: none !important;
   }
   .print-only {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
+    display: block !important;
   }
 }
