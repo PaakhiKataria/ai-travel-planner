@@ -115,16 +115,3 @@ code {
   body { background: white !important; }
   * { box-shadow: none !important; }
 }*/
-
-.print-only {
-  display: none;
-}
-
-@media print {
-  body > div > * {
-    display: none !important;
-  }
-  .print-only {
-    display: block !important;
-  }
-}

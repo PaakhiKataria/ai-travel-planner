@@ -101,8 +101,54 @@ export default function TripDetail() {
   }
 
   const handlePrint = () => {
-    window.print()
-  }
+  const printContent = `
+    <html>
+    <head>
+      <title>${trip.destination} - Travel Itinerary</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 32px; color: #333; }
+        h1 { color: #667eea; }
+        h2 { color: #444; border-bottom: 2px solid #667eea; padding-bottom: 8px; margin-top: 32px; }
+        h3 { color: #333; margin-bottom: 4px; }
+        .place { margin-bottom: 20px; padding: 16px; border: 1px solid #eee; border-radius: 8px; }
+        .time { color: #667eea; font-weight: bold; font-size: 14px; }
+        .desc { color: #666; margin: 6px 0; }
+        .cost { color: #555; font-size: 13px; }
+        .tip { color: #555; margin-bottom: 6px; }
+        .meta { color: #666; margin-bottom: 24px; }
+        hr { border: none; border-top: 1px solid #eee; margin: 24px 0; }
+      </style>
+    </head>
+    <body>
+      <h1>✈️ ${trip.destination}</h1>
+      <p class="meta">${trip.num_days} days · ${trip.budget} budget · ${trip.interests}</p>
+      <p><strong>Total estimated cost:</strong> ${trip.itinerary?.total_estimated_cost || 'N/A'}</p>
+      <hr/>
+      ${days.map(day => `
+        <h2>Day ${day.day} — ${day.title}</h2>
+        ${day.places.map(place => `
+          <div class="place">
+            <div class="time">${place.time}</div>
+            <h3>${place.name}</h3>
+            <p class="desc">${place.description}</p>
+            <p class="cost">💰 ${place.estimated_cost}</p>
+          </div>
+        `).join('')}
+      `).join('')}
+      ${trip.itinerary?.tips ? `
+        <h2>💡 Travel Tips</h2>
+        <ul>
+          ${trip.itinerary.tips.map(tip => `<li class="tip">${tip}</li>`).join('')}
+        </ul>
+      ` : ''}
+    </body>
+    </html>
+  `
+  const printWindow = window.open('', '_blank')
+  printWindow.document.write(printContent)
+  printWindow.document.close()
+  printWindow.print()
+}
 
   const fetchPackingList = async () => {
     if (packingList) {
@@ -517,36 +563,6 @@ export default function TripDetail() {
         )}
 
       </div>
-
-      {/* Print Only Content - hidden on screen, shown when printing */}
-      <div className="print-only">
-        <h1>✈️ {trip.destination}</h1>
-        <p>{trip.num_days} days · {trip.budget} budget · {trip.interests}</p>
-        <p>Total estimated cost: {trip.itinerary?.total_estimated_cost}</p>
-        <hr />
-        {days.map((day, i) => (
-          <div key={i}>
-            <h2>Day {day.day} — {day.title}</h2>
-            {day.places.map((place, j) => (
-              <div key={j} style={{ marginBottom: '12px' }}>
-                <strong>{place.time} — {place.name}</strong>
-                <p>{place.description}</p>
-                <p>Cost: {place.estimated_cost}</p>
-              </div>
-            ))}
-            <hr />
-          </div>
-        ))}
-        {trip.itinerary?.tips && (
-          <div>
-            <h2>💡 Travel Tips</h2>
-            <ul>
-              {trip.itinerary.tips.map((tip, i) => <li key={i}>{tip}</li>)}
-            </ul>
-          </div>
-        )}
-      </div>
-
     </div>
   )
 }
