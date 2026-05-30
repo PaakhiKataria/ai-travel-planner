@@ -104,7 +104,10 @@ export default function Profile() {
     <div style={styles.page}>
       <Navbar />
       <div style={styles.container}>
-
+        {/* Back button */}
+        <button style={styles.backBtn} onClick={() => navigate('/dashboard')}>
+          ← Back to Dashboard
+        </button>
         {/* Profile Header */}
         <div style={styles.profileCard}>
           <div style={styles.avatar}>
@@ -330,4 +333,14 @@ const styles = {
   },
   successMsg: { color: '#38a169', marginBottom: '12px', fontWeight: 'bold' },
   errorMsg: { color: '#e53e3e', marginBottom: '12px' },
+  backBtn: {
+    padding: '8px 16px',
+    background: 'transparent',
+    border: '1px solid #ddd',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    color: '#666',
+    marginBottom: '20px',
+    display: 'inline-block',
+  },
 }
