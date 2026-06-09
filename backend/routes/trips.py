@@ -360,8 +360,9 @@ def email_itinerary(
         send_itinerary_email(current_user.email, trip)
         return {"message": "Itinerary sent successfully!"}
     except Exception as e:
+        print(f"EMAIL ERROR: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
-
+    
 @router.delete("/{trip_id}")
 def delete_trip(
     trip_id: int,
