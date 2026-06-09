@@ -836,7 +836,7 @@ const styles = {
     padding: '12px 32px',
     background: 'white',
     color: '#555',
-    border: 'none',
+    border: '1px solid #ddd',
     borderRadius: '8px',
     cursor: 'pointer',
     fontWeight: 'bold',
