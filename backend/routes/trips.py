@@ -9,9 +9,7 @@ from groq import Groq
 from dotenv import load_dotenv
 import os
 import json
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import resend
 
 load_dotenv()
 
@@ -179,8 +177,7 @@ def generate_packing_list(destination: str, num_days: int, budget: str, interest
     return json.loads(content)
 
 def send_itinerary_email(email: str, trip_data):
-    gmail_user = os.getenv("GMAIL_USER")
-    gmail_password = os.getenv("GMAIL_APP_PASSWORD")
+    resend.api_key = os.getenv("RESEND_API_KEY")
 
     days_html = ""
     for day in trip_data.itinerary.get("days", []):
@@ -235,17 +232,12 @@ def send_itinerary_email(email: str, trip_data):
         </div>
     """
 
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = f"✈️ Your {trip_data.destination} Itinerary"
-    msg['From'] = gmail_user
-    msg['To'] = email
-    msg.attach(MIMEText(html_content, 'html'))
-
-    with smtplib.SMTP('smtp.gmail.com', 587) as server:
-        server.ehlo()
-        server.starttls()
-        server.login(gmail_user, gmail_password)
-        server.sendmail(gmail_user, email, msg.as_string())
+    resend.Emails.send({
+        "from": "AI Travel Planner <onboarding@resend.dev>",
+        "to": [os.getenv("RESEND_TO_EMAIL", email)],
+        "subject": f"✈️ Your {trip_data.destination} Itinerary",
+        "html": html_content,
+    })
 # ─── Routes ─────────────────────────────────────────────
 
 @router.post("/generate", response_model=TripOut)
