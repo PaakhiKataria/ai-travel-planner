@@ -822,7 +822,6 @@ const styles = {
     boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
   },
   printOnly: { display: 'none' },
-  printOnly: { display: 'none' },
   printSection: {
     marginTop: '40px',
     textAlign: 'center',
@@ -841,6 +840,6 @@ const styles = {
     cursor: 'pointer',
     fontWeight: 'bold',
     fontSize: '15px',
-    boxShadow: '0 2px 8px rgba(102, 126, 234, 0.4)',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
   },
 }
