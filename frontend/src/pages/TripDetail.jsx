@@ -102,17 +102,6 @@ export default function TripDetail() {
   }
 
   const handlePrint = () => {
-  const handleEmailItinerary = async () => {
-  setEmailSending(true)
-  try {
-    await api.post(`/trips/${id}/send-email`)
-    alert('✅ Itinerary sent to your email!')
-  } catch {
-    alert('Failed to send email. Please try again.')
-  } finally {
-    setEmailSending(false)
-  }
-}
   const printContent = `
     <html>
     <head>
@@ -160,6 +149,17 @@ export default function TripDetail() {
   printWindow.document.write(printContent)
   printWindow.document.close()
   printWindow.print()
+}
+const handleEmailItinerary = async () => {
+  setEmailSending(true)
+  try {
+    await api.post(`/trips/${id}/send-email`)
+    alert('✅ Itinerary sent to your email!')
+  } catch {
+    alert('Failed to send email. Please try again.')
+  } finally {
+    setEmailSending(false)
+  }
 }
 
   const fetchPackingList = async () => {
