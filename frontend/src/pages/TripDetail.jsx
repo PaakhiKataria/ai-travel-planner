@@ -834,8 +834,8 @@ const styles = {
   },
   emailBtn: {
     padding: '12px 32px',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: 'white',
+    background: 'white',
+    color: '#555',
     border: 'none',
     borderRadius: '8px',
     cursor: 'pointer',
