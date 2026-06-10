@@ -9,7 +9,6 @@ from groq import Groq
 from dotenv import load_dotenv
 import os
 import json
-import resend
 
 load_dotenv()
 
@@ -176,68 +175,6 @@ def generate_packing_list(destination: str, num_days: int, budget: str, interest
     content = content.strip()
     return json.loads(content)
 
-def send_itinerary_email(email: str, trip_data):
-    resend.api_key = os.getenv("RESEND_API_KEY")
-
-    days_html = ""
-    for day in trip_data.itinerary.get("days", []):
-        places_html = ""
-        for place in day.get("places", []):
-            places_html += f"""
-                <div style="margin-bottom:16px; padding:14px; border:1px solid #eee; border-radius:8px;">
-                    <div style="color:#667eea; font-weight:bold; font-size:13px;">{place.get('time', '')}</div>
-                    <h3 style="margin:6px 0 4px; color:#333;">{place.get('name', '')}</h3>
-                    <p style="margin:0 0 6px; color:#666; font-size:14px;">{place.get('description', '')}</p>
-                    <p style="margin:0; color:#555; font-size:13px;">💰 {place.get('estimated_cost', '')}</p>
-                </div>
-            """
-        days_html += f"""
-            <div style="margin-bottom:24px;">
-                <h2 style="color:#667eea; border-bottom:2px solid #667eea; padding-bottom:8px;">
-                    Day {day.get('day')} — {day.get('title', '')}
-                </h2>
-                {places_html}
-            </div>
-        """
-
-    tips_html = ""
-    if trip_data.itinerary.get("tips"):
-        tips_items = "".join([f"<li style='margin-bottom:6px; color:#555;'>{tip}</li>" for tip in trip_data.itinerary["tips"]])
-        tips_html = f"""
-            <div style="background:#fffbea; border:1px solid #fde68a; border-radius:8px; padding:16px; margin-top:24px;">
-                <h3 style="margin:0 0 12px; color:#333;">💡 Travel Tips</h3>
-                <ul style="margin:0; padding-left:20px;">{tips_items}</ul>
-            </div>
-        """
-
-    html_content = f"""
-        <div style="font-family:Arial,sans-serif; max-width:600px; margin:0 auto; color:#333;">
-            <div style="background:linear-gradient(135deg,#667eea,#764ba2); padding:32px; border-radius:16px 16px 0 0; text-align:center;">
-                <h1 style="color:white; margin:0; font-size:28px;">✈️ Your Travel Itinerary</h1>
-                <p style="color:rgba(255,255,255,0.9); margin:8px 0 0; font-size:16px;">{trip_data.destination}</p>
-            </div>
-            <div style="background:white; padding:32px; border-radius:0 0 16px 16px; border:1px solid #eee;">
-                <div style="background:#f7f8fc; border-radius:8px; padding:16px; margin-bottom:24px;">
-                    <p style="margin:0; color:#555;">📅 <strong>{trip_data.num_days} days</strong> &nbsp;|&nbsp;
-                    💳 <strong>{trip_data.budget} budget</strong> &nbsp;|&nbsp;
-                    🎯 <strong>{trip_data.interests}</strong></p>
-                    <p style="margin:8px 0 0; color:#555;">💰 Total estimated cost: <strong>{trip_data.itinerary.get('total_estimated_cost', 'N/A')}</strong></p>
-                </div>
-                {days_html}
-                {tips_html}
-                <div style="text-align:center; margin-top:32px; padding-top:24px; border-top:1px solid #eee;">
-                    <p style="color:#999; font-size:13px;">Sent from AI Travel Planner</p>
-                </div>
-            </div>
-        </div>
-    """
-
-    resend.Emails.send({
-        "from": "AI Travel Planner <onboarding@resend.dev>",
-        "to": [os.getenv("RESEND_TO_EMAIL", email)],
-        "subject": f"✈️ Your {trip_data.destination} Itinerary",
-        "html": html_content,
-    })
 # ─── Routes ─────────────────────────────────────────────
 
 @router.post("/generate", response_model=TripOut)
@@ -340,22 +277,6 @@ def get_packing_list(
         trip.interests
     )
     return packing_list
-
-@router.post("/{trip_id}/send-email")
-def email_itinerary(
-    trip_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    trip = db.query(Trip).filter(Trip.id == trip_id, Trip.user_id == current_user.id).first()
-    if not trip:
-        raise HTTPException(status_code=404, detail="Trip not found")
-    try:
-        send_itinerary_email(current_user.email, trip)
-        return {"message": "Itinerary sent successfully!"}
-    except Exception as e:
-        print(f"EMAIL ERROR: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
     
 @router.delete("/{trip_id}")
 def delete_trip(

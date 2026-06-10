@@ -24,7 +24,6 @@ export default function TripDetail() {
   const [editNumDays, setEditNumDays] = useState(3)
   const [editBudget, setEditBudget] = useState('moderate')
   const [editInterests, setEditInterests] = useState([])
-  const [emailSending, setEmailSending] = useState(false)
 
   const navigate = useNavigate()
 
@@ -149,17 +148,6 @@ export default function TripDetail() {
   printWindow.document.write(printContent)
   printWindow.document.close()
   printWindow.print()
-}
-const handleEmailItinerary = async () => {
-  setEmailSending(true)
-  try {
-    await api.post(`/trips/${id}/send-email`)
-    alert('✅ Itinerary sent to your email!')
-  } catch {
-    alert('Failed to send email. Please try again.')
-  } finally {
-    setEmailSending(false)
-  }
 }
 
   const fetchPackingList = async () => {
@@ -565,18 +553,11 @@ const handleEmailItinerary = async () => {
           </div>
         )}
 
-        {/* Print + Email Buttons at bottom */}
+        {/* Print Buttons at bottom */}
         {!editMode && (
           <div style={styles.printSection}>
             <button style={styles.printBtn} onClick={handlePrint}>
               🖨️ Print Full Itinerary
-            </button>
-            <button
-              style={styles.emailBtn}
-              onClick={handleEmailItinerary}
-              disabled={emailSending}
-            >
-              {emailSending ? '📧 Sending...' : '📧 Email Itinerary'}
             </button>
           </div>
         )}
@@ -822,24 +803,4 @@ const styles = {
     boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
   },
   printOnly: { display: 'none' },
-  printSection: {
-    marginTop: '40px',
-    textAlign: 'center',
-    paddingBottom: '32px',
-    display: 'flex',
-    gap: '16px',
-    justifyContent: 'center',
-    flexWrap: 'wrap',
-  },
-  emailBtn: {
-    padding: '12px 32px',
-    background: 'white',
-    color: '#555',
-    border: '1px solid #ddd',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    fontSize: '15px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-  },
 }
