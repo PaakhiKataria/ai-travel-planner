@@ -175,6 +175,51 @@ def generate_packing_list(destination: str, num_days: int, budget: str, interest
     content = content.strip()
     return json.loads(content)
 
+def generate_trip_suggestions(trips_data: list):
+    if not trips_data:
+        return []
+
+    trips_summary = "\n".join([
+        f"- {t['destination']} ({t['num_days']} days, {t['budget']} budget, interests: {t['interests']})"
+        for t in trips_data
+    ])
+
+    prompt = f"""
+    Based on this user's travel history:
+    {trips_summary}
+
+    Suggest exactly 3 new travel destinations they would love.
+    Consider their budget preferences, interests and past destinations.
+
+    Return ONLY a valid JSON object with this exact structure, no extra text:
+    {{
+        "suggestions": [
+            {{
+                "destination": "City, Country",
+                "reason": "Why this matches their travel style in 1-2 sentences",
+                "estimated_budget": "budget/moderate/luxury",
+                "best_time": "Best months to visit",
+                "highlights": ["highlight1", "highlight2", "highlight3"]
+            }}
+        ]
+    }}
+    """
+
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.7,
+    )
+
+    content = response.choices[0].message.content
+    content = content.strip()
+    if content.startswith("```"):
+        content = content.split("```")[1]
+        if content.startswith("json"):
+            content = content[4:]
+    content = content.strip()
+    return json.loads(content).get("suggestions", [])
+
 # ─── Routes ─────────────────────────────────────────────
 
 @router.post("/generate", response_model=TripOut)
@@ -290,3 +335,25 @@ def delete_trip(
     db.delete(trip)
     db.commit()
     return {"message": "Trip deleted successfully"}
+
+@router.get("/suggestions/ai", response_model=None)
+def get_trip_suggestions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    trips = db.query(Trip).filter(Trip.user_id == current_user.id).all()
+    if len(trips) < 2:
+        return {"suggestions": [], "message": "Create at least 2 trips to get AI suggestions"}
+
+    trips_data = [
+        {
+            "destination": t.destination,
+            "num_days": t.num_days,
+            "budget": t.budget,
+            "interests": t.interests
+        }
+        for t in trips
+    ]
+
+    suggestions = generate_trip_suggestions(trips_data)
+    return {"suggestions": suggestions}
