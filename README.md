@@ -15,7 +15,9 @@ Backend API: https://ai-travel-planner-4wuo.onrender.com
 | Dashboard | Trip Itinerary | Packing List |
 |-----------|---------------|--------------|
 | ![Dashboard](screenshots/dashboard.png) | ![Itinerary](screenshots/itinerary.png) | ![Packing](screenshots/packing.png) |
-
+| Profile   | AI Trip Suggestion |
+|-----------|---------------|
+| ![Profile](screenshots/profile.png) | ![Suggestions](screenshots/aitrip.png) |
 ---
 
 ## ✨ Features
