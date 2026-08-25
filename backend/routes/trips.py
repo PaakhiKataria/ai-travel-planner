@@ -9,12 +9,15 @@ from groq import Groq
 from dotenv import load_dotenv
 import os
 import json
+import time
 
 load_dotenv()
 
 router = APIRouter(prefix="/trips", tags=["Trips"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+MODEL = "openai/gpt-oss-120b"
 
 
 # ─── Helper: get current user from token ────────────────
@@ -37,21 +40,44 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 # ─── Helper: clean and parse JSON from AI response ──────
 def parse_json(content: str) -> dict:
     content = content.strip()
-    # Remove thinking tags
     if '<think>' in content:
         content = content.split('</think>')[-1].strip()
-    # Remove markdown code fences
     if content.startswith("```"):
         content = content.split("```")[1]
         if content.startswith("json"):
             content = content[4:]
     content = content.strip()
-    # Extract just the JSON object
     start = content.find('{')
     end = content.rfind('}')
     if start != -1 and end != -1:
         content = content[start:end+1]
     return json.loads(content)
+
+
+# ─── Helper: call Groq with retry on rate limit ─────────
+def call_groq(prompt: str, retries: int = 3) -> str:
+    for attempt in range(retries):
+        try:
+            response = client.chat.completions.create(
+                model=MODEL,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            error_str = str(e)
+            if "rate_limit" in error_str.lower() or "429" in error_str:
+                if attempt < retries - 1:
+                    wait = (attempt + 1) * 5
+                    print(f"Rate limit hit, waiting {wait}s before retry...")
+                    time.sleep(wait)
+                else:
+                    raise HTTPException(
+                        status_code=429,
+                        detail="AI service is busy. Please wait a moment and try again."
+                    )
+            else:
+                raise e
 
 
 # ─── Generate itinerary with Groq ───────────────────────
@@ -118,13 +144,7 @@ def generate_itinerary(destination: str, num_days: int, budget: str, interests: 
     }}
     """
 
-    response = client.chat.completions.create(
-        model="openai/gpt-oss-20b",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
-    )
-
-    return parse_json(response.choices[0].message.content)
+    return parse_json(call_groq(prompt))
 
 
 # ─── Generate packing list with Groq ────────────────────
@@ -172,13 +192,7 @@ def generate_packing_list(destination: str, num_days: int, budget: str, interest
     }}
     """
 
-    response = client.chat.completions.create(
-        model="openai/gpt-oss-20b",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
-    )
-
-    return parse_json(response.choices[0].message.content)
+    return parse_json(call_groq(prompt))
 
 
 # ─── Generate trip suggestions with Groq ────────────────
@@ -212,13 +226,7 @@ def generate_trip_suggestions(trips_data: list):
     }}
     """
 
-    response = client.chat.completions.create(
-        model="openai/gpt-oss-20b",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
-    )
-
-    return parse_json(response.choices[0].message.content).get("suggestions", [])
+    return parse_json(call_groq(prompt)).get("suggestions", [])
 
 
 # ─── Routes ─────────────────────────────────────────────
