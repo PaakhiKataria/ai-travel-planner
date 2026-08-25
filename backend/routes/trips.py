@@ -99,7 +99,7 @@ def generate_itinerary(destination: str, num_days: int, budget: str, interests: 
     """
 
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="qwen/qwen3.6-27b",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
     )
@@ -161,7 +161,7 @@ def generate_packing_list(destination: str, num_days: int, budget: str, interest
     """
 
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="qwen/qwen3.6-27b",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
     )
@@ -206,7 +206,7 @@ def generate_trip_suggestions(trips_data: list):
     """
 
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="qwen/qwen3.6-27b",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
     )
