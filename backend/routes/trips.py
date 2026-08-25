@@ -34,7 +34,6 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 
-# ─── Generate itinerary with Groq ───────────────────────
 def generate_itinerary(destination: str, num_days: int, budget: str, interests: str):
 
     if budget == "budget":
@@ -99,20 +98,30 @@ def generate_itinerary(destination: str, num_days: int, budget: str, interests: 
     """
 
     response = client.chat.completions.create(
-        model="qwen/qwen3.6-27b",
+        model="openai/gpt-oss-120b",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
     )
 
     content = response.choices[0].message.content
-
-    # Clean and parse JSON
     content = content.strip()
+
+    # Remove thinking tags (some models return <think>...</think> blocks)
+    if '<think>' in content:
+        content = content.split('</think>')[-1].strip()
+
+    # Remove markdown code fences
     if content.startswith("```"):
         content = content.split("```")[1]
         if content.startswith("json"):
             content = content[4:]
     content = content.strip()
+
+    # Extract just the JSON object
+    start = content.find('{')
+    end = content.rfind('}')
+    if start != -1 and end != -1:
+        content = content[start:end+1]
 
     return json.loads(content)
 
