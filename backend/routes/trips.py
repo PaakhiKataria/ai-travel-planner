@@ -34,6 +34,27 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 
+# ─── Helper: clean and parse JSON from AI response ──────
+def parse_json(content: str) -> dict:
+    content = content.strip()
+    # Remove thinking tags
+    if '<think>' in content:
+        content = content.split('</think>')[-1].strip()
+    # Remove markdown code fences
+    if content.startswith("```"):
+        content = content.split("```")[1]
+        if content.startswith("json"):
+            content = content[4:]
+    content = content.strip()
+    # Extract just the JSON object
+    start = content.find('{')
+    end = content.rfind('}')
+    if start != -1 and end != -1:
+        content = content[start:end+1]
+    return json.loads(content)
+
+
+# ─── Generate itinerary with Groq ───────────────────────
 def generate_itinerary(destination: str, num_days: int, budget: str, interests: str):
 
     if budget == "budget":
@@ -103,28 +124,10 @@ def generate_itinerary(destination: str, num_days: int, budget: str, interests: 
         temperature=0.7,
     )
 
-    content = response.choices[0].message.content
-    content = content.strip()
+    return parse_json(response.choices[0].message.content)
 
-    # Remove thinking tags (some models return <think>...</think> blocks)
-    if '<think>' in content:
-        content = content.split('</think>')[-1].strip()
 
-    # Remove markdown code fences
-    if content.startswith("```"):
-        content = content.split("```")[1]
-        if content.startswith("json"):
-            content = content[4:]
-    content = content.strip()
-
-    # Extract just the JSON object
-    start = content.find('{')
-    end = content.rfind('}')
-    if start != -1 and end != -1:
-        content = content[start:end+1]
-
-    return json.loads(content)
-
+# ─── Generate packing list with Groq ────────────────────
 def generate_packing_list(destination: str, num_days: int, budget: str, interests: str, weather: str = ""):
     prompt = f"""
     Generate a smart packing list for a {num_days}-day trip to {destination}.
@@ -170,20 +173,15 @@ def generate_packing_list(destination: str, num_days: int, budget: str, interest
     """
 
     response = client.chat.completions.create(
-        model="qwen/qwen3.6-27b",
+        model="openai/gpt-oss-120b",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
     )
 
-    content = response.choices[0].message.content
-    content = content.strip()
-    if content.startswith("```"):
-        content = content.split("```")[1]
-        if content.startswith("json"):
-            content = content[4:]
-    content = content.strip()
-    return json.loads(content)
+    return parse_json(response.choices[0].message.content)
 
+
+# ─── Generate trip suggestions with Groq ────────────────
 def generate_trip_suggestions(trips_data: list):
     if not trips_data:
         return []
@@ -215,19 +213,13 @@ def generate_trip_suggestions(trips_data: list):
     """
 
     response = client.chat.completions.create(
-        model="qwen/qwen3.6-27b",
+        model="openai/gpt-oss-120b",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
     )
 
-    content = response.choices[0].message.content
-    content = content.strip()
-    if content.startswith("```"):
-        content = content.split("```")[1]
-        if content.startswith("json"):
-            content = content[4:]
-    content = content.strip()
-    return json.loads(content).get("suggestions", [])
+    return parse_json(response.choices[0].message.content).get("suggestions", [])
+
 
 # ─── Routes ─────────────────────────────────────────────
 
@@ -314,6 +306,7 @@ def regenerate_trip(
     db.refresh(trip)
     return trip
 
+
 @router.post("/{trip_id}/packing-list")
 def get_packing_list(
     trip_id: int,
@@ -323,7 +316,7 @@ def get_packing_list(
     trip = db.query(Trip).filter(Trip.id == trip_id, Trip.user_id == current_user.id).first()
     if not trip:
         raise HTTPException(status_code=404, detail="Trip not found")
-    
+
     packing_list = generate_packing_list(
         trip.destination,
         trip.num_days,
@@ -331,7 +324,8 @@ def get_packing_list(
         trip.interests
     )
     return packing_list
-    
+
+
 @router.delete("/{trip_id}")
 def delete_trip(
     trip_id: int,
@@ -344,6 +338,7 @@ def delete_trip(
     db.delete(trip)
     db.commit()
     return {"message": "Trip deleted successfully"}
+
 
 @router.get("/suggestions/ai", response_model=None)
 def get_trip_suggestions(
