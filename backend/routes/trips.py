@@ -119,7 +119,7 @@ def generate_itinerary(destination: str, num_days: int, budget: str, interests: 
     """
 
     response = client.chat.completions.create(
-        model="openai/gpt-oss-120b",
+        model="openai/gpt-oss-20b",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
     )
@@ -173,7 +173,7 @@ def generate_packing_list(destination: str, num_days: int, budget: str, interest
     """
 
     response = client.chat.completions.create(
-        model="openai/gpt-oss-120b",
+        model="openai/gpt-oss-20b",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
     )
@@ -213,7 +213,7 @@ def generate_trip_suggestions(trips_data: list):
     """
 
     response = client.chat.completions.create(
-        model="openai/gpt-oss-120b",
+        model="openai/gpt-oss-20b",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
     )
