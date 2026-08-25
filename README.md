@@ -22,7 +22,7 @@ Backend API: https://ai-travel-planner-4wuo.onrender.com
 
 | Feature | Description |
 |---------|-------------|
-| 🤖 **AI Itinerary Generation** | Day-by-day travel plans with places, times and estimated costs powered by Groq AI (LLaMA 3.3) |
+| 🤖 **AI Itinerary Generation** | Day-by-day travel plans with places, times and estimated costs powered by Groq AI (GPT-OSS 120B) |
 | 🧭 **AI Trip Suggestions** | Analyzes your travel history and recommends 3 personalized destinations with reasons, budget tier and best time to visit |
 | 🏨 **Hotel Recommendations** | 5 curated hotels matched to your budget — budget, moderate or luxury |
 | 🌤️ **5-Day Weather Forecast** | Real-time weather forecast for your destination via OpenWeatherMap |
@@ -61,7 +61,7 @@ Backend API: https://ai-travel-planner-4wuo.onrender.com
 | SQLAlchemy | ORM for database management |
 | PostgreSQL (Neon) | Cloud database for persistent storage |
 | JWT + bcrypt | Secure authentication |
-| Groq AI (LLaMA 3.3) | AI itinerary, packing list, and trip suggestion generation |
+| Groq AI (GPT-OSS 120B) | AI itinerary, packing list, and trip suggestion generation |
 | Pytest | Automated backend test suite (10/10 passing) |
 | Render | Backend deployment |
 
